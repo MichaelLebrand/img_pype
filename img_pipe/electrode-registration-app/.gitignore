@@ -1,0 +1,8 @@
+venv/
+*.pyc
+*~
+#*
+*.ui.autosave
+.idea/
+__pycache__
+Old/
