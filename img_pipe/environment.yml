@@ -1,4 +1,4 @@
-name: img_pype_test
+name: img_pype
 channels:
 - conda-forge
 - defaults
