@@ -6,15 +6,15 @@ Most of this project is based on the image processing pipeline created by Libert
 Package Requirements:
 This package has been tested on Ubuntu 16.04 LTS and requires the user to install the following packages:
 
-FreeSurfer https://surfer.nmr.mgh.harvard.edu/fswiki/FreeSurferWiki
+-FreeSurfer https://surfer.nmr.mgh.harvard.edu/fswiki/FreeSurferWiki
 
-ACPC-detect https://www.nitrc.org/projects/art
+-ACPC-detect https://www.nitrc.org/projects/art
 
-MATLAB (tested on 2017b/2018a)
+-MATLAB (tested on 2017b/2018a)
 
-SPM 12 for MATLAB http://www.fil.ion.ucl.ac.uk/spm/software/spm12/ 
+-SPM 12 for MATLAB http://www.fil.ion.ucl.ac.uk/spm/software/spm12/ 
 
-dcm2niix (install via NeuroDebian, or compile yourself. Just make sure you can run it from terminal. See:  http://neuro.debian.net/install_pkg.html?p=dcm2niix)
+-dcm2niix (install via NeuroDebian, or compile yourself. Just make sure you can run it from terminal. See:  http://neuro.debian.net/install_pkg.html?p=dcm2niix)
 
 
 Optional:
