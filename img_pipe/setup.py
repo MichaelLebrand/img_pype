@@ -2,6 +2,15 @@ from setuptools import setup
 from setuptools.command.install import install
 import os, subprocess
 
+# This was part of the img_pipe package and forces conda to install the vtk and pyqt4 packages. However, these packages
+# are already distributed with the anaconda package. If you run into problems with the installation of vtk/pyqt you
+# could try to uncomment the lines of code below and create a shellscript 'dependencies.sh. with:
+# #! /bin/bash
+#
+# conda install -y vtk==6.3.0
+# conda install -y pyqt==4.11.4
+
+
 # class MyInstall(install):
 #
 #     def run(self):
