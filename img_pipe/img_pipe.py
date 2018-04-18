@@ -331,7 +331,7 @@ class freeCoG:
 
         # Verify/adjust automated ACPC allignment with SPM's niftii viewer/editor
         matlab_command = "h=spm_image('%s','%s');uiwait(h);exit" %('Display',os.path.join(self.acpc_dir,'T1.nii'))
-        os.system('matlab -nodesktop -nosplash -r "%s"'%matlab_command)
+        os.system('matlab -nodesktop -r "%s"'%matlab_command)
 
         # set spm values from sform to qform and save a new T1.nii
         n2_img=nib.load(os.path.join(self.acpc_dir,'T1.nii'))
@@ -345,7 +345,7 @@ class freeCoG:
             os.remove(os.path.join(self.acpc_dir, 'T1.nii'))
             matlab_command = "h=spm_image('%s','%s');uiwait(h);exit" % (
             'Display', os.path.join(self.acpc_dir, 'rawT1.nii'))
-            os.system('matlab -nodesktop -nosplash -r "%s"' % matlab_command)
+            os.system('matlab -nodesktop -r "%s"' % matlab_command)
 
             # set spm values from sform to qform
             n2_img = nib.load(os.path.join(self.acpc_dir, 'rawT1.nii'))
@@ -603,7 +603,7 @@ class freeCoG:
             shutil.copy(os.path.join(self.CT_dir,'rawCT.nii'),os.path.join(self.CT_dir,'CT.nii'))
 
         matlab_command = "h=spm_image('%s','%s');uiwait(h);exit" %('Display',os.path.join(self.CT_dir,'CT.nii'))
-        os.system('matlab -nodesktop -nosplash -r "%s"'%matlab_command)
+        os.system('matlab -nodesktop -r "%s"'%matlab_command)
 
         # Set variables
         source_file = os.path.join(self.CT_dir, source)
