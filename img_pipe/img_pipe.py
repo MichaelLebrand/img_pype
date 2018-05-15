@@ -223,7 +223,8 @@ class freeCoG:
         pipeline: if the current preprocessing is run from the img_pype pipeline or if it is a standalone session
         0 = standalone (default), 1 = img_pype session
 
-        origin: sets the origin of the ACPC detect. if 0 it will
+        origin: sets the origin of the ACPC detect. if 0 it will set the origin to the Anterior Commisure,
+        if 1 it will set it as the midline of the AC - PC
 
         '''
 
@@ -232,6 +233,10 @@ class freeCoG:
         self.ctDicomDirectory = ctdicom
         self.rawT1 =os.path.join(self.acpc_dir,'rawT1.nii')
         self.T1_auto = os.path.join(self.acpc_dir, 'T1_automated.nii')
+        self.T1 = os.path.join(self.acpc_dir, 'T1.nii')
+        self.origin = origin
+        print self.origin
+
 
         # if pipeline, convert dicoms, run first and secon acpc allign with acpcdetect and run self.setorigin()
         if pipeline == 1:
@@ -243,7 +248,15 @@ class freeCoG:
             shutil.copy(self.rawT1,self.T1_auto)
             os.system('acpcdetect -i %s -sform -notxt -noppm' % self.T1_auto)
             os.system('acpcdetect -i %s' % self.T1_auto)
-            if origin:
+
+            print 'validating projections'
+
+            if self.origin == 'Anterior':
+                shutil.copy(self.T1_auto, self.T1)
+                matlab_command = "h=spm_image('%s','%s');uiwait(h);exit" % (
+                    'Display', os.path.join(self.acpc_dir, 'T1.nii'))
+                os.system('matlab -nodesktop -nosplash -r "%s"' % matlab_command)
+            elif self.origin == 'Midline':
                 self.setorigin()
 
             # Sometimes the automated ACPC allignment is so bad that starting with the raw file is easiest for manual ACPC
@@ -368,7 +381,7 @@ class freeCoG:
         n2_img._affine=newAffine2
 
 
-    def get_recon(self, flag3T='', flag_gpu='', flag_cpu=''):
+    def get_recon(self, flag3T='', flag_cpu=''): #flag_gpu=''
         '''Runs freesurfer recon-all for surface reconstruction.                
         
         Parameters
@@ -383,6 +396,9 @@ class freeCoG:
             otherwise use gpu_flag='' 
 
         '''
+
+        print ('\n *************************** \n' \
+              'running current sector with %s \n ***************************\n' %flag_cpu)
 
         self.use3T = flag3T
         self.useCPU = flag_cpu

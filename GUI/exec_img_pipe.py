@@ -21,7 +21,7 @@ class exec_img_pipe:
 
         # initialize img_pipe and run prep_ and get_recon
         patient = img_pipe.freeCoG(self.subjID, self.hemi)
-        patient.prep_recon(t1dicom=self.mriDicomDirectory, ctdicom=self.ctDicomDirectory, pipeline=1,origin = self.origin)
+        patient.prep_recon(t1dicom=self.mriDicomDirectory, ctdicom=self.ctDicomDirectory, pipeline=1, origin=self.origin)
         patient.get_recon(flag3T=self.use3T, flag_cpu=self.useCPU)
 
 
@@ -41,9 +41,5 @@ if __name__ == "__main__":
     else:
         flagGPU = '-openmp 4'
 
-    if sys.argv[7] == 1:
-        origin = 0
-    else:
-        origin = 1
-
+    origin = sys.argv[7]
     exec_img_pipe(subj, hem, t1dicom, ctdicom, flagT3, flagGPU, origin)
