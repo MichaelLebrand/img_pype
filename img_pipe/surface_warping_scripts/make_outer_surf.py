@@ -4,7 +4,7 @@ import nibabel as nib
 from scipy.signal import convolve
 from scipy.ndimage.morphology import grey_closing, generate_binary_structure
 from mne import write_surface
-from mcubes import marching_cubes
+from skimage import measure
 
 def make_outer_surf(orig_pial, image, radius, outfile):
     '''
@@ -49,7 +49,8 @@ def make_outer_surf(orig_pial, image, radius, outfile):
     BW2[np.where(BW2 <= thresh)] = 0
     BW2[np.where(BW2 > thresh)] = 255
 
-    v, f = marching_cubes(BW2, 100)
+    # v, f = marching_cubes(BW2, 100)
+    v, f= measure.marching_cubes(BW2, 100)
 
     v2 = np.transpose(
              np.vstack( ( 128 - v[:,0],
