@@ -42,7 +42,7 @@ from mayavi.modules.api import Outline, Text3D, Glyph
 
 from core import io, estimate, register, utils, projElectrodes
 import numpy as np
-from scipy import ndimage, spatial
+from scipy import ndimage, spatial, interpolate
 from sklearn import cluster
 import nibabel as nib
 from scipy.ndimage import morphology as morph
@@ -109,9 +109,8 @@ class ComponentItem(object):
             'set': lambda x: int(x) if x.strip().isdigit() else None,
         },
     }
-    app_dir = os.path.dirname(__file__)
-    grid_color_lut = map(lambda rgb: tuple(map(lambda x: x / 255., rgb)),
-                         json.load(open(os.path.join(app_dir,'brewer-qualitative.strong.12.json'))))
+    os.chdir('/home/michael/electrode-registration-app/')
+    grid_color_lut = map(lambda rgb: tuple(map(lambda x: x / 255., rgb)), json.load(open('app/brewer-qualitative.strong.12.json')))
     grid_labels = []
 
     def __init__(self, name, voxel, transform,
@@ -146,28 +145,28 @@ class ComponentItem(object):
     @property
     def points(self):
         ijks = np.asarray(np.nonzero(self.voxel))
-        translationIndices = np.asarray(np.nonzero(self.transform[:3, :3]))
-        translationValues = self.transform[translationIndices[0], translationIndices[1]]
+        # translationIndices = np.asarray(np.nonzero(self.transform[:3, :3]))
+        # translationValues = self.transform[translationIndices[0], translationIndices[1]]
         # this corrects the centroid so it's at the right position in the viewer
-        if translationValues.__len__() > 3:
-            translationValues = np.round(translationValues)
-            return (self.transform[:3, :3].dot(np.reshape(c, (3, -1))) + self.transform[:3, 3:]) + \
-                   np.reshape(translationValues[np.nonzero(translationValues)],(3,-1))
-        return (self.transform[:3, :3].dot(ijks) + self.transform[:3, 3:]) + translationValues.reshape(3,-1)
-        # return (self.transform[:3, :3].dot(ijks) + self.transform[:3, 3:])
+        # if translationValues.__len__() > 3:
+        #     translationValues = np.round(translationValues)
+        #     return (self.transform[:3, :3].dot(np.reshape(c, (3, -1))) + self.transform[:3, 3:]) + \
+        #            np.reshape(translationValues[np.nonzero(translationValues)],(3,-1))
+        # return (self.transform[:3, :3].dot(ijks) + self.transform[:3, 3:]) + translationValues.reshape(3,-1)
+        return (self.transform[:3, :3].dot(ijks) + self.transform[:3, 3:])
 
     @property
     def centroid(self):
         c = ndimage.measurements.center_of_mass(self.voxel)
-        translationIndices = np.asarray(np.nonzero(self.transform[:3, :3]))
-        translationValues = self.transform[translationIndices[0], translationIndices[1]]
-        # this corrects the centroid so it's at the right position in the viewer
-        if translationValues.__len__() > 3:
-            translationValues = np.round(translationValues)
-            return (self.transform[:3, :3].dot(np.reshape(c, (3, -1))) + self.transform[:3, 3:]) + \
-                   np.reshape(translationValues[np.nonzero(translationValues)],(3,-1))
-        return (self.transform[:3, :3].dot(np.reshape(c, (3, -1))) + self.transform[:3, 3:]) + translationValues.reshape(3,-1)
-        # return (self.transform[:3, :3].dot(np.reshape(c, (3, -1)))) + self.transform[:3, 3:]
+        # translationIndices = np.asarray(np.nonzero(self.transform[:3, :3]))
+        # translationValues = self.transform[translationIndices[0], translationIndices[1]]
+        # # this corrects the centroid so it's at the right position in the viewer Edit: sadly also changes RAS
+        # if translationValues.__len__() > 3:
+        #     translationValues = np.round(translationValues)
+        #     return (self.transform[:3, :3].dot(np.reshape(c, (3, -1))) + self.transform[:3, 3:]) + \
+        #            np.reshape(translationValues[np.nonzero(translationValues)],(3,-1))
+        # return (self.transform[:3, :3].dot(np.reshape(c, (3, -1))) + self.transform[:3, 3:]) + translationValues.reshape(3,-1)
+        return (self.transform[:3, :3].dot(np.reshape(c, (3, -1)))) + self.transform[:3, 3:]
 
     @property
     def grid_label(self):
@@ -632,6 +631,7 @@ class Application(object):
         # ui.pushButton_manual.toggled.connect(self.do_register_manual)
         ui.pushButton_unregister.clicked.connect(self.unregister)
         ui.pushButton_saveElectrodes.clicked.connect(self.saveMat)
+        ui.saveDBSlead.clicked.connect(self.segmentDBSlead)
 
         # label tab
         self.label_model = QtGui.QSortFilterProxyModel()
@@ -1845,24 +1845,35 @@ class Application(object):
         # Put all values into an ndarray and sort it according to their channel number
         electrodeAmount = electrodes.__len__()
         sortedElectrodes = np.zeros(shape=[electrodeAmount,4])
+        sortedElectrodesOriginal = np.zeros(shape=[electrodeAmount,4])
+
         for idx in range(electrodeAmount):
             sortedElectrodes[idx,0] = electrodes[idx].channel_number
             sortedElectrodes[idx,1:] = electrodes[idx].register_position
+            sortedElectrodesOriginal[idx,0] = electrodes[idx].channel_number
+            sortedElectrodesOriginal[idx,1:] = np.reshape(electrodes[idx].centroid,(-1,3))
+
 
         sortedElectrodes=sortedElectrodes[sortedElectrodes[:,0].argsort()]
+        sortedElectrodesOriginal = sortedElectrodesOriginal[sortedElectrodesOriginal[:,0].argsort()]
         print 'Here are the sorted electrodes: \n'
         print sortedElectrodes
 
         #remove channel number
         sortedElectrodes = sortedElectrodes[:,1:]
         sortedElectrodesSURF = sortedElectrodes - self.surf2ras[:3, 3]
+        sortedElectrodesOriginal = sortedElectrodesOriginal[:,1:]
+        sortedElectrodesOriginalSurf = sortedElectrodesOriginal - self.surf2ras[:3, 3]
+
         transformationMatrix = self.surf2ras
 
         # save both the locations in RAS and SurfaceRAS
         elec_dir = os.path.join(self.subj_dir,self.subj,'elecs','individual_elecs')
-        outfile = 'hd_grid'
-        outfileSURF = 'hd_grid_SURF'
+        outfile = 'hd_grid_RAS'
+        outfileSURF = 'hd_grid'
         outfileTransform = 'transformationMatrixSurf2Ras'
+        outfileOriginalCoordinates = 'originalCoordinates'
+        outfileOriginalCoordinatesSurf = 'originalCoordinatesSurf'
 
         gridOutfile = os.path.join(elec_dir, '%s.mat' % (outfile))
         scipy.io.savemat(gridOutfile, {'elecmatrix': sortedElectrodes})
@@ -1870,11 +1881,14 @@ class Application(object):
         gridOutfileSURF = os.path.join(elec_dir, '%s.mat' % (outfileSURF))
         scipy.io.savemat(gridOutfileSURF, {'elecmatrix': sortedElectrodesSURF})
 
+        gridOutfileOrig = os.path.join(elec_dir, '%s.mat' % (outfileOriginalCoordinates))
+        scipy.io.savemat(gridOutfileOrig, {'originalElectrodeLocations': sortedElectrodesOriginal })
+
+        gridOutfileOrigSurf = os.path.join(elec_dir, '%s.mat' % (outfileOriginalCoordinatesSurf))
+        scipy.io.savemat(gridOutfileOrigSurf, {'originalElectrodeLocationsSurf': sortedElectrodesOriginalSurf })
+
         transformOut = os.path.join(elec_dir, '%s.mat' % (outfileTransform))
-        scipy.io.savemat(transformOut, {'transformationmatrix': outfileTransform})
-
-
-
+        scipy.io.savemat(transformOut, {'transformationMatrix': transformationMatrix})
 
 
     def export_csv(self, fn, only_selected=False):
@@ -1926,6 +1940,57 @@ class Application(object):
                 self.export_freesurfer_dat(os.path.join(path, '%s.dat' % label), filter(lambda x: x.grid_label==label, electrodes))
         else:
             self.export_freesurfer_dat(path, electrodes)
+
+
+    def segmentDBSlead(self):
+        '''
+        This function will save the segmented leads of teh DBS electrodes. It will save coordinates in
+        two coordinate systems: FreeSurfer RAS and RAS.
+        :return: None
+        '''
+
+        # put the selected electrodes into a list with all their ComponentItem variables
+        electrodes = map(lambda i: self.segment_model.itemFromIndex(
+            self.register_model.mapToSource(self.label_model.mapToSource(i))),
+                         filter(lambda x: x.column() == 0, self.label_selection_model.selectedIndexes()))
+
+        # find points and Z (Superior/inferior) dimension
+        points = electrodes[0].points
+        pts=pts=np.transpose(points)
+        ptsZdim = pts[:,2]
+
+        # find the 4 lowest and highest values
+        idxLowest = np.argpartition(ptsZdim, 4)
+        idxHighest = np.argpartition(ptsZdim, -4)
+        lowestPnts = pts[idxLowest[:4],:]
+        highestPnts = pts[idxHighest[-4:],:]
+
+        # take the center of the 4 lowest and highest points
+        lowestPnt = np.average(lowestPnts, axis = 0)
+        highestPnt = np.average(highestPnts, axis = 0)
+        dist = np.linalg.norm(lowestPnt - highestPnt)
+        n = np.round(dist)
+
+        x = [lowestPnt[0],highestPnt[0]]
+        y = [lowestPnt[1],highestPnt[1]]
+        z = [lowestPnt[2],highestPnt[2]]
+
+        # interpolate between the highest and lowest point
+        xInterp = np.linspace(lowestPnt[0],highestPnt[0], num = n)
+        yInterp = np.linspace(lowestPnt[1],highestPnt[1], num = n)
+        zInterp = np.linspace(lowestPnt[2],highestPnt[2], num = n)
+
+        xyz = np.hstack((xInterp, yInterp,zInterp))
+        XYZ = np.transpose(np.vstack((xInterp, yInterp,zInterp))) # in scanner coordinates!!
+        XYZsurf = XYZ - self.surf2ras[:3, 3]
+        spacing = np.linalg.norm(XYZ[0,:] - XYZ[1,:]) # find distance between points
+
+        # saving it all
+        print ('\n ***************** \n Saving the lead locations in RAS and Surface coordinates. See SUBJ/elecs/individual_elecs folder for output. ' \
+              'Spacing between points is %f mm.\n ***************** \n  ' %spacing)
+        elec_dir = os.path.join(self.subj_dir, self.subj, 'elecs', 'individual_elecs')
+        DBSOutfile = os.path.join(elec_dir, '%s.mat' % ('dbs_lead_locations'))
+        scipy.io.savemat(DBSOutfile, {'pointsRAS': XYZ,'pointsSURF':XYZsurf,'spacing':spacing})
 
 
     def export_freesurfer_dat(self, fn, electrodes):
@@ -2030,8 +2095,8 @@ if __name__ == '__main__':
 
     subj = sys.argv[1]
     hemi = sys.argv[2]
-    # subj = 'DY_043_AL'
-    # hemi = 'rh'
+    # subj = 'ET_041_DW'
+    # hemi = 'lh'
 
 
     mayavi_widget = MayaviQWidget()

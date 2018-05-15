@@ -2,7 +2,7 @@
 
 # Form implementation generated from reading ui file 'mainwindow.ui'
 #
-# Created: Thu Apr 12 17:12:13 2018
+# Created: Mon May 14 15:29:26 2018
 #      by: pyside-uic 0.2.15 running on PySide 1.2.2
 #
 # WARNING! All changes made in this file will be lost!
@@ -379,10 +379,6 @@ class Ui_MainWindow(object):
         self.pushButton_AvgSurfNormal.setObjectName("pushButton_AvgSurfNormal")
         self.gridLayout.addWidget(self.pushButton_AvgSurfNormal, 0, 0, 1, 2)
         self.gridLayout_4.addLayout(self.gridLayout, 3, 0, 1, 1)
-        self.pushButton_saveElectrodes = QtGui.QPushButton(self.tab_register)
-        self.pushButton_saveElectrodes.setObjectName("pushButton_saveElectrodes")
-        self.pushButton_saveElectrodes.setEnabled(False)
-        self.gridLayout_4.addWidget(self.pushButton_saveElectrodes, 6, 0, 1, 1)
         self.horizontalLayout_13 = QtGui.QHBoxLayout()
         self.horizontalLayout_13.setObjectName("horizontalLayout_13")
         self.pushButton_nearest = QtGui.QPushButton(self.tab_register)
@@ -392,6 +388,17 @@ class Ui_MainWindow(object):
         self.pushButton_export.setObjectName("pushButton_export")
         self.horizontalLayout_13.addWidget(self.pushButton_export)
         self.gridLayout_4.addLayout(self.horizontalLayout_13, 8, 0, 1, 1)
+        self.horizontalLayout_14 = QtGui.QHBoxLayout()
+        self.horizontalLayout_14.setObjectName("horizontalLayout_14")
+        self.pushButton_saveElectrodes = QtGui.QPushButton(self.tab_register)
+        self.pushButton_saveElectrodes.setObjectName("pushButton_saveElectrodes")
+        self.pushButton_saveElectrodes.setEnabled(False)
+        self.horizontalLayout_14.addWidget(self.pushButton_saveElectrodes)
+        self.saveDBSlead = QtGui.QPushButton(self.tab_register)
+        self.saveDBSlead.setEnabled(True)
+        self.saveDBSlead.setObjectName("saveDBSlead")
+        self.horizontalLayout_14.addWidget(self.saveDBSlead)
+        self.gridLayout_4.addLayout(self.horizontalLayout_14, 7, 0, 1, 1)
         self.tabWidget.addTab(self.tab_register, "")
         self.verticalLayout_3.addWidget(self.tabWidget)
         self.dockWidget.setWidget(self.dockWidgetContents)
@@ -519,12 +526,13 @@ class Ui_MainWindow(object):
         self.pushButton_AvgSurfNormal.setToolTip(QtGui.QApplication.translate("MainWindow", "This projection uses the average surface normals calculated from a diameter around the electrode. ", None, QtGui.QApplication.UnicodeUTF8))
         self.pushButton_AvgSurfNormal.setText(QtGui.QApplication.translate("MainWindow", "Project", None, QtGui.QApplication.UnicodeUTF8))
         self.pushButton_AvgSurfNormal.setShortcut(QtGui.QApplication.translate("MainWindow", "B", None, QtGui.QApplication.UnicodeUTF8))
-        self.pushButton_saveElectrodes.setText(QtGui.QApplication.translate("MainWindow", "Save Electrodes.mat", None, QtGui.QApplication.UnicodeUTF8))
         self.pushButton_nearest.setToolTip(QtGui.QApplication.translate("MainWindow", "This projection just projects to the nearest vertex (euclidean distance) of the suface model.", None, QtGui.QApplication.UnicodeUTF8))
         self.pushButton_nearest.setText(QtGui.QApplication.translate("MainWindow", "Alt. projection: Nearest vertex", None, QtGui.QApplication.UnicodeUTF8))
         self.pushButton_nearest.setShortcut(QtGui.QApplication.translate("MainWindow", "N", None, QtGui.QApplication.UnicodeUTF8))
         self.pushButton_export.setText(QtGui.QApplication.translate("MainWindow", "&Export...", None, QtGui.QApplication.UnicodeUTF8))
         self.pushButton_export.setShortcut(QtGui.QApplication.translate("MainWindow", "E", None, QtGui.QApplication.UnicodeUTF8))
+        self.pushButton_saveElectrodes.setText(QtGui.QApplication.translate("MainWindow", "Save hd_grid.mat", None, QtGui.QApplication.UnicodeUTF8))
+        self.saveDBSlead.setText(QtGui.QApplication.translate("MainWindow", "save DBS lead", None, QtGui.QApplication.UnicodeUTF8))
         self.tabWidget.setTabText(self.tabWidget.indexOf(self.tab_register), QtGui.QApplication.translate("MainWindow", "Register", None, QtGui.QApplication.UnicodeUTF8))
         self.menuFile.setTitle(QtGui.QApplication.translate("MainWindow", "File", None, QtGui.QApplication.UnicodeUTF8))
         self.menuView.setTitle(QtGui.QApplication.translate("MainWindow", "View", None, QtGui.QApplication.UnicodeUTF8))

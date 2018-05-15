@@ -215,10 +215,15 @@ class freeCoG:
         os.environ['SUBJECTS_DIR'] = subj_dir
 
 
-    def prep_recon(self, t1dicom='', ctdicom='', pipeline=0):
+    def prep_recon(self, t1dicom='', ctdicom='', pipeline=0, origin = 0):
         '''
         Prepares file directory structure of subj_dir, copies acpc-aligned
         T1.nii to the 'orig' directory and converts to mgz format.
+
+        pipeline: if the current preprocessing is run from the img_pype pipeline or if it is a standalone session
+        0 = standalone (default), 1 = img_pype session
+
+        origin: sets the origin of the ACPC detect. if 0 it will
 
         '''
 
@@ -238,7 +243,31 @@ class freeCoG:
             shutil.copy(self.rawT1,self.T1_auto)
             os.system('acpcdetect -i %s -sform -notxt -noppm' % self.T1_auto)
             os.system('acpcdetect -i %s' % self.T1_auto)
-            self.setorigin()
+            if origin:
+                self.setorigin()
+
+            # Sometimes the automated ACPC allignment is so bad that starting with the raw file is easiest for manual ACPC
+            q_cont = raw_input(
+                'Satisfied with the ACPC (y/n)? Typing n will let you manually allign the ACPC of the RAW T1 file.: \n')
+            if q_cont.upper() == 'N' or q_cont.upper() == 'NO':
+                os.remove(os.path.join(self.acpc_dir, 'T1.nii'))
+                matlab_command = "h=spm_image('%s','%s');uiwait(h);exit" % (
+                    'Display', os.path.join(self.acpc_dir, 'rawT1.nii'))
+                os.system('matlab -nodesktop -nosplash -r "%s"' % matlab_command)
+
+                # set spm values from sform to qform
+                n2_img = nib.load(os.path.join(self.acpc_dir, 'rawT1.nii'))
+                newAffine2 = n2_img.header.get_sform()
+                n2_img.header.set_qform(newAffine2)
+                n2_img._affine = newAffine2
+                nib.save(n2_img, os.path.join(self.acpc_dir, 'T1.nii'))
+                print '**************************************************************************** \n ' \
+                      '                      Starting FreeSurfer Segmentation                       \n' \
+                      '**************************************************************************** \n'
+            else:
+                print '**************************************************************************** \n ' \
+                      '                      Starting FreeSurfer Segmentation                       \n' \
+                      '**************************************************************************** \n'
 
         # create elecs folders
         if not os.path.isdir(self.elecs_dir):
@@ -296,7 +325,6 @@ class freeCoG:
             ac.remove('')
         pc = pc.rstrip('\n')
         pc = pc.split(' ')
-        pcStrRem = pc.count('')
 
         # remove redundant non-integer strings
         pcStrRem = pc.count('')
@@ -339,29 +367,8 @@ class freeCoG:
         n2_img.header.set_qform(newAffine2)
         n2_img._affine=newAffine2
 
-        # Sometimes the automated ACPC allignment is so bad that starting with the raw file is easiest for manual ACPC
-        q_cont = raw_input('Satisfied with the ACPC (y/n)? Typing n will let you manually allign the ACPC of the RAW T1 file.: \n')
-        if q_cont.upper() == 'N' or q_cont.upper() == 'NO':
-            os.remove(os.path.join(self.acpc_dir, 'T1.nii'))
-            matlab_command = "h=spm_image('%s','%s');uiwait(h);exit" % (
-            'Display', os.path.join(self.acpc_dir, 'rawT1.nii'))
-            os.system('matlab -nodesktop -nosplash -r "%s"' % matlab_command)
 
-            # set spm values from sform to qform
-            n2_img = nib.load(os.path.join(self.acpc_dir, 'rawT1.nii'))
-            newAffine2 = n2_img.header.get_sform()
-            n2_img.header.set_qform(newAffine2)
-            n2_img._affine = newAffine2
-            nib.save(n2_img, os.path.join(self.acpc_dir, 'T1.nii'))
-            print '**************************************************************************** \n ' \
-                  '                      Starting FreeSurfer Segmentation                       \n' \
-                  '**************************************************************************** \n'
-        else:
-            print '**************************************************************************** \n ' \
-                  '                      Starting FreeSurfer Segmentation                       \n' \
-                  '**************************************************************************** \n'
-
-    def get_recon(self, flag3T='', flag_gpu=''): #,openmp_flag=''
+    def get_recon(self, flag3T='', flag_gpu='', flag_cpu=''):
         '''Runs freesurfer recon-all for surface reconstruction.                
         
         Parameters
@@ -376,17 +383,18 @@ class freeCoG:
             otherwise use gpu_flag='' 
 
         '''
+
         self.use3T = flag3T
-        self.useGPU = flag_gpu
+        self.useCPU = flag_cpu
 
         # select recon-all based on input from GUI
-        if len(self.use3T):
+        if len(self.use3T) and not len(self.useCPU):
             os.system('recon-all -all -subjid %s -sd %s %s' % (self.subj, self.subj_dir, self.use3T))
-        elif len(self.useGPU):
-            os.system('recon-all -all -subjid %s -sd %s %s %s %s' % (self.subj, self.subj_dir, self.useGPU))
-        elif len(self.useGPU) and len(self.use3T):
+        elif len(self.useCPU) and not len(self.use3T):
+            os.system('recon-all -all -subjid %s -sd %s %s %s %s' % (self.subj, self.subj_dir, self.useCPU))
+        elif len(self.useCPU) and len(self.use3T):
             os.system('recon-all -all -subjid %s -sd %s %s %s' % (
-            self.subj, self.subj_dir, self.use3T, self.useGPU))
+            self.subj, self.subj_dir, self.use3T, self.useCPU))
         else:
             os.system('recon-all -all -subjid %s -sd %s' % (self.subj, self.subj_dir))
 
