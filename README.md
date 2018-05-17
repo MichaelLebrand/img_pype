@@ -16,10 +16,6 @@ This package has been tested on Ubuntu 16.04 LTS and requires the user to instal
 
 -dcm2niix (install via NeuroDebian, or compile yourself. Just make sure you can run it from terminal. See:  http://neuro.debian.net/install_pkg.html?p=dcm2niix)
 
-
-Optional:
-FSL (only used if co-registration of the img_pipe toolbox fails). If installed, add the img_pype/auxillary_files folder to your ._bashrc_. I.e.: _export PATH=$PATH:/home/michael/Git-Hub/img_pipe/auxilary_files_) https://fsl.fmrib.ox.ac.uk/fsl/fslwiki
-
 N.B.: Make sure ALL these packages are available to your terminal (i.e. correctly configure your ._bashrc_) or the pipeline will run into errors. 
 
 
