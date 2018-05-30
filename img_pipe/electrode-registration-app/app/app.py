@@ -1575,7 +1575,7 @@ class Application(object):
         info ('registering electrodes with average surface normal')
          # load normals data from file
         normals = self.getNormalsData()
-        # Get allt he selected electrodes from model and register each segment to the dural surface
+        # Get all the selected electrodes from model and register each segment to the dural surface
         for idx in self.register_selection_model.selectedIndexes():
             if idx.column() == 0:
                 component = self.segment_model.itemFromIndex(self.register_model.mapToSource(idx))
