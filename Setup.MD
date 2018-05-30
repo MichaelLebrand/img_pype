@@ -17,7 +17,7 @@ Go to the [img\_pype package](https://github.com/MichaelLebrand/img_pype) on git
 
 Go into the folder where you want to start the pipeline from and open a terminal there. Type the following:
 
-**git clone https://github.com/MichaelLebrand/img\_pype**
+**git clone https://github.com/MichaelLebrand/img_pype**
 
 This will clone the pipeline into the directory and you will see the img\_pype folder with the subfolders auxiliary\_files, GUI and img\_pipe. Go into the img\_pipe directory.
 
