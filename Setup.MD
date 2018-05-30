@@ -47,9 +47,6 @@ Next, it&#39;s time to install the package in your virtual environment. You inst
 
 1. Verify that the installation was successful by importing the _img\___pipe_package ( **Figure S1** ) in your current  _img\___pype_ environment. To do this, open an ipython console by typing ipython in the terminal and type **import img\_pipe**
 
-
-**Figure S**  **1**  **After activating the virtual environment and an ipython console, import the img\_pipe package to verify the installation.**
-
 If this imports successfully you&#39;re all set to go to the next step. If not, read the error carefully and try to figure out what causes it. Sometimes the _conda package manager_ can&#39;t install all the dependencies from the _environment.yml_ file properly and that causes some errors. Other times the Numpy package will throw errors, or the VTK/PyQt4 package that isn&#39;t properly installed (look at comments in _setup.py_ for help with that or google).
 
 ## Edited SPM file
