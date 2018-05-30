@@ -109,8 +109,9 @@ class ComponentItem(object):
             'set': lambda x: int(x) if x.strip().isdigit() else None,
         },
     }
-    os.chdir('/home/michael/electrode-registration-app/')
-    grid_color_lut = map(lambda rgb: tuple(map(lambda x: x / 255., rgb)), json.load(open('app/brewer-qualitative.strong.12.json')))
+    app_dir = os.path.dirname(__file__)
+    grid_color_lut = map(lambda rgb: tuple(map(lambda x: x / 255., rgb)),
+                         json.load(open(os.path.join(app_dir, 'brewer-qualitative.strong.12.json'))))
     grid_labels = []
 
     def __init__(self, name, voxel, transform,
